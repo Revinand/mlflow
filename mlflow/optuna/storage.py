@@ -361,7 +361,11 @@ class MlflowStorage(BaseStorage):
         # Flush all batches to ensure we have the latest data
         self.flush_all_batches()
 
-        runs = self._mlflow_client.search_runs(experiment_ids=[self._experiment_id])
+        # Trials are runs in the same experiment, so match only runs with the study direction tag
+        runs = self._mlflow_client.search_runs(
+            experiment_ids=[self._experiment_id],
+            filter_string="tags.`optuna.study_direction` LIKE '%'",
+        )
         studies = []
         for run in runs:
             study_id = run.info.run_id
